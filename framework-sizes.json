@@ -1,0 +1,20 @@
+{
+  "vue,vue-router,vuex": [
+    {
+      "name": "vue,vue-router,vuex",
+      "versionedName": "vue@2.5.16,vue-router@3.0.1,vuex@3.0.1",
+      "size": 321841,
+      "minified": 99580,
+      "gzipped": 33353
+    }
+  ],
+  "react,react-dom,react-router,redux": [
+    {
+      "name": "react,react-dom,react-router,redux",
+      "versionedName": "react@16.3.2,react-dom@16.3.2,react-router@4.2.0,redux@4.0.0",
+      "size": 844051,
+      "minified": 138272,
+      "gzipped": 40957
+    }
+  ]
+}

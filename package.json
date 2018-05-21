@@ -1,0 +1,19 @@
+{
+  "name": "framework-sizes",
+  "version": "1.0.0",
+  "description": "Sizes of modern JS frameworks",
+  "main": "index.js",
+  "scripts": {
+    "update-sizes": "node generate-sizes.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vue",
+    "react",
+    "preact",
+    "angular",
+    "ember"
+  ],
+  "author": "Daniel Wedin",
+  "license": "MIT"
+}
