@@ -4,7 +4,7 @@
   "description": "Sizes of modern JS frameworks",
   "main": "index.js",
   "scripts": {
-    "update-sizes": "node generate-sizes.js",
+    "update-sizes": "node src/generate-sizes.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
