@@ -18,7 +18,7 @@ async function generateNewSizeFile() {
 
 const includePreReleases = false;
 async function getAllVersionsForPackage(packageName) {
-  const { stdout, stderr } = await exec(`npm show ${packageName} versions --json`);
+  const { stdout } = await exec(`npm show ${packageName} versions --json`);
   const versions = JSON.parse(stdout);
 
   const filteredVersions = versions.filter(version => {
@@ -34,14 +34,13 @@ async function getAllVersionsForPackage(packageName) {
 
 async function getReleaseTime(package, version) {
   const arg = version ? `${package}@${version}` : package;
-  const { stdout, stderr } = await exec(`npm view ${arg} time --json`);
+  const { stdout } = await exec(`npm view ${arg} time --json`);
   const view = JSON.parse(stdout);
 
   return version ? view[version] : view;
 }
 
 function packageSizeUpdater(packageSizes) {
-  packageSizes = packageSizes;
   function addPackageSize(packageSize) {
     if (!packageSizes[packageSize.name]) {
       packageSizes[packageSize.name] = [packageSize];
