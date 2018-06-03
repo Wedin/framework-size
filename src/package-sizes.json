@@ -1,16 +1,23 @@
 [
   {
-    "name": "vue,vue-router,vuex",
-    "versionedName": "vue@2.5.16,vue-router@3.0.1,vuex@3.0.1",
-    "size": 321841,
-    "minified": 99580,
-    "gzipped": 33353
+    "name": "react@16.3.0",
+    "versionedName": "react@16.3.0",
+    "size": 63831,
+    "minified": 6567,
+    "gzipped": 2598
   },
   {
-    "name": "react,react-dom,react-router,redux",
-    "versionedName": "react@16.3.2,react-dom@16.3.2,react-router@4.2.0,redux@4.0.0",
-    "size": 844051,
-    "minified": 138272,
-    "gzipped": 40957
+    "name": "react@16.3.1",
+    "versionedName": "react@16.3.1",
+    "size": 63784,
+    "minified": 6568,
+    "gzipped": 2600
+  },
+  {
+    "name": "react@16.3.2",
+    "versionedName": "react@16.3.2",
+    "size": 64266,
+    "minified": 6944,
+    "gzipped": 2705
   }
 ]
