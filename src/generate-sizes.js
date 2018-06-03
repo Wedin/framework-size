@@ -1,21 +1,18 @@
-// Group by , and separate groups with space
-const reactPackages = ["react", "react-dom", "react-router", "redux"];
-const vuePackages = ["vue", "vue-router", "vuex"];
-const frameworksList = `${reactPackages.join(",")} ${vuePackages.join(",")}`;
-
-const tmpOutputPath = "./src/tmp-package-sizes.json";
-const genOutputPath = () => {
-  return `./src/tmp-package-sizes-${+new Date()}.json`;
-};
-const outputFilePath = "./src/framework-sizes.json";
-
 const util = require("util");
 const _ = require("lodash");
 const exec = util.promisify(require("child_process").exec);
+const { getJSONFile } = require("./fileUtils");
 
-const { getJSONFile, writeJSONFile } = require("./fileUtils");
+const tmpOutputPath = "./src/tmp-package-sizes.json";
+const genTempOutputPath = () => {
+  return `./src/tmp-package-sizes-${+new Date()}.json`;
+};
 
-async function generateNewSizeFile(packages, output = tmpOutputPath) {
+//OPTS
+const chunk_size = 10;
+const tryExcludePreReleases = true;
+
+async function genNewPackageSizeFile(packages, output = tmpOutputPath) {
   const { stdout, stderr } = await exec(`package-size ${packages} --output ${output}`);
   if (stderr) throw stderr;
 
@@ -23,20 +20,19 @@ async function generateNewSizeFile(packages, output = tmpOutputPath) {
 }
 
 async function getSizes(packages) {
-  const tmpFile = genOutputPath();
-  await generateNewSizeFile(packages, tmpFile);
+  const tmpFile = genTempOutputPath();
+  await genNewPackageSizeFile(packages, tmpFile);
   const generatedSizes = await getJSONFile(tmpFile);
   return generatedSizes;
 }
 
-const includePreReleases = false;
 async function getAllVersionsForPackage(packageName) {
   const { stdout } = await exec(`npm show ${packageName} versions --json`);
   const versions = JSON.parse(stdout);
 
   const filteredVersions = versions.filter(version => {
     const preReleaseParts = ["rc", "alpha", "beta"];
-    if (!includePreReleases) {
+    if (tryExcludePreReleases) {
       return !preReleaseParts.some(pt => version.includes(pt));
     }
     return true;
@@ -50,12 +46,12 @@ async function getReleaseTime(package, version) {
   const { stdout, stderr } = await exec(`npm view ${arg} time --json`);
   if (stderr) throw stderr;
 
-  const view = JSON.parse(stdout);
+  const npmViewTime = JSON.parse(stdout);
 
-  return version ? view[version] : view;
+  return version ? npmViewTime[version] : npmViewTime;
 }
 
-function getVersions(packageName) {
+function getAllPackageVersions(packageName) {
   return Promise.all([getAllVersionsForPackage(packageName), getReleaseTime(packageName)]).then(
     ([allVersions, releases]) => {
       const versions = allVersions.map(version => {
@@ -70,77 +66,43 @@ function getVersions(packageName) {
   );
 }
 
-async function sizeVersions(packageReleases) {
+async function getSizesOfVersions(packageReleases) {
   packageReleases = [
     packageReleases[packageReleases.length - 1],
     packageReleases[packageReleases.length - 2],
     packageReleases[packageReleases.length - 3],
   ];
 
-  const chunked = _.chunk(packageReleases, 10);
+  const chunked = _.chunk(packageReleases, chunk_size);
 
-  console.log(chunked);
-  const all = chunked.map(chunk => {
-    const psInput = chunk.map(v => `${v.name}@${v.version}`);
-    const sizes = getSizes(psInput.join(" ")).then(sizes => {
-      return {
-        gzipped: sizes.gzipped,
-        minified: sizes.minified,
-        name: chunk.name,
-        release: chunk.release,
-        size: sizes.size,
-        version: chunk.version,
-        versionedName: sizes.versionedName,
-      };
-    });
-  });
+  const allSizes = await Promise.all(
+    chunked.map(async chunk => {
+      const psInput = chunk.map(v => `${v.name}@${v.version}`).join(" ");
+      const sizeOutput = await getSizes(psInput);
 
-  console.log("all", all);
-  return all;
+      return sizeOutput.map((size, i) => {
+        const versionInfo = chunk[i];
+
+        return {
+          gzipped: size.gzipped,
+          minified: size.minified,
+          name: versionInfo.name,
+          release: versionInfo.release,
+          size: size.size,
+          version: versionInfo.version,
+          versionedName: size.versionedName,
+        };
+      });
+    })
+  );
+
+  return _.flatten(allSizes);
 }
 
-function packageSizeUpdater(packageSizes) {
-  function addPackageSize(packageSize) {
-    if (!packageSizes[packageSize.name]) {
-      packageSizes[packageSize.name] = [packageSize];
-      return true;
-    }
-
-    const found = packageSizes[packageSize.name].find(elem => elem.versionedName === packageSize.versionedName);
-    if (!found) {
-      packageSizes[packageSize.name].push(packageSize);
-      return true;
-    }
-    return false;
-  }
-  return {
-    addPackageSize,
-    packageSizes,
-  };
+async function test() {
+  const reactVersions = await getAllPackageVersions("react");
+  const packageSizes = await getSizesOfVersions(reactVersions);
+  console.log(packageSizes);
 }
 
-// Let's not 🌶
-async function updateAllSizesFromFile() {
-  try {
-    const generatedSizes = await getJSONFile(tmpOutputPath);
-    const oldSizes = await getJSONFile(outputFilePath);
-    const packageSizer = packageSizeUpdater(oldSizes);
-
-    generatedSizes.map(packageSize => {
-      packageSizer.addPackageSize(packageSize);
-    });
-
-    await writeJSONFile(outputFilePath, packageSizer.packageSizes);
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function generate() {
-  await generateNewSizeFile(frameworksList);
-  await updateAllSizesFromFile();
-}
-
-getVersions("react").then(x => {
-  sizeVersions(x).then(y => console.log(y));
-});
+test();
