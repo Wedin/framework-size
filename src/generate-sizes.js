@@ -3,9 +3,9 @@ const _ = require("lodash");
 const exec = util.promisify(require("child_process").exec);
 const { getJSONFile } = require("./fileUtils");
 
-const tmpOutputPath = "./src/tmp-package-sizes.json";
+const tmpOutputPath = "./src/temp/tmp-package-sizes.json";
 const genTempOutputPath = () => {
-  return `./src/tmp-package-sizes-${+new Date()}.json`;
+  return `./src/temp/tmp-package-sizes-${+new Date()}.json`;
 };
 
 //OPTS

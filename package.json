@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "generate-sizes": "node src/generate-sizes.js",
+    "clean": "rm -rf ./src/temp/*.json",
     "lint": "eslint src --fix",
     "format": "prettier src/**/* --write",
     "test": "echo \"Error: no test specified\" && exit 1"
