@@ -1,7 +1,7 @@
 
 # Created by https://www.gitignore.io/api/osx
 
-src/tmp-package-sizes*
+src/temp/tmp-package-sizes*
 
 ### Node ###
 # Logs

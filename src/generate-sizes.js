@@ -9,7 +9,7 @@ const genTempOutputPath = () => {
 };
 
 //OPTS
-const chunk_size = 10;
+const chunk_size = 15;
 const tryExcludePreReleases = true;
 
 async function genNewPackageSizeFile(packages, output = tmpOutputPath) {
@@ -67,11 +67,10 @@ function getAllPackageVersions(packageName) {
 }
 
 async function getSizesOfVersions(packageReleases) {
-  packageReleases = [
-    packageReleases[packageReleases.length - 1],
-    packageReleases[packageReleases.length - 2],
-    packageReleases[packageReleases.length - 3],
-  ];
+  packageReleases =
+    packageReleases.length > chunk_size
+      ? packageReleases.slice(packageReleases.length - chunk_size, packageReleases.length)
+      : packageReleases;
 
   const chunked = _.chunk(packageReleases, chunk_size);
 
@@ -99,10 +98,17 @@ async function getSizesOfVersions(packageReleases) {
   return _.flatten(allSizes);
 }
 
-async function test() {
-  const reactVersions = await getAllPackageVersions("react");
+async function getPackageSizes(packageName) {
+  const reactVersions = await getAllPackageVersions(packageName);
   const packageSizes = await getSizesOfVersions(reactVersions);
-  console.log(packageSizes);
+  return packageSizes;
 }
 
-test();
+async function test(packageName) {
+  const sizes = await getPackageSizes(packageName);
+  console.log(sizes);
+}
+
+test("react");
+
+module.exports = getPackageSizes;
